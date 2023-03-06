@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\UsuarioRegistrado;
 use Illuminate\Http\Request;
 use App\Models\Usuarios;
 use Illuminate\Support\Facades\Validator;
@@ -53,6 +54,7 @@ class UsuariosController extends Controller
         if ($validate->fails()) {
             return response()->json([
                 'errores' => $validate,
+                'status' => 204,
             ], 204);
         }
 
@@ -69,8 +71,11 @@ class UsuariosController extends Controller
 
         $usuario->save();
 
+        event(new UsuarioRegistrado($usuario));
+
         return response()->json([
             'usuario' => $usuario,
+            'status' => 201,
         ], 201);
     }
 
@@ -86,10 +91,12 @@ class UsuariosController extends Controller
         if (!$usuario) {
             return response()->json([
                 'mensaje' => 'El usuario indicado no existe',
+                'status' => 404,
             ], 404);
         }
         return response()->json([
             'usuario' => $usuario,
+            'status' => 200,
         ], 200);
     }
 
@@ -113,22 +120,30 @@ class UsuariosController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'nombres' => 'required',
-            'apellidos' => 'required',
-            'cedula' => 'required',
-            'email' => 'required',
+        $validate = Validator::make($request->all(), [
+            'nombres' => 'required|min:5|max:100',
+            'apellidos' => 'required|min:5|max:100',
+            'cedula' => 'required|unique:App\Models\Usuarios,cedula',
+            'email' => 'required|email|max:150|unique:App\Models\Usuarios,email',
             'pais' => 'required',
-            'direccion' => 'required',
-            'celular' => 'required',
-            'categoria_id' => 'required',
+            'direccion' => 'required|max:180',
+            'celular' => 'required|min:10|max:10',
+            'categoria' => 'required',
         ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'errores' => $validate,
+                'status' => 204,
+            ], 204);
+        }
 
         $usuario = Usuarios::find($id);
 
         if (!$usuario) {
             return response()->json([
                 'mensaje' => 'El usuario para actualizar no existe',
+                'status' => 404,
             ], 404);
         }
 
@@ -139,12 +154,13 @@ class UsuariosController extends Controller
         $usuario->pais = $request->pais;
         $usuario->direccion = $request->direccion;
         $usuario->celular = $request->celular;
-        $usuario->categoria_id = $request->categoria_id;
+        $usuario->categoria_id = $request->categoria;
 
         $usuario->save();
 
         return response()->json([
             'usuario' => $usuario,
+            'status' => 201,
         ], 201);
     }
 
@@ -160,12 +176,14 @@ class UsuariosController extends Controller
         if (!$usuario) {
             return response()->json([
                 'mensaje' => 'El usuario a eliminar no existe',
+                'status' => 404,
             ], 404);
         }
 
         $usuario->delete();
         return response()->json([
             'mensaje' => 'El usuario fue eliminado',
+            'status' => 200,
         ], 200);
     }
 }
