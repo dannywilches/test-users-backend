@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Usuarios;
+use Illuminate\Support\Facades\Validator;
 
 class UsuariosController extends Controller
 {
@@ -38,16 +39,22 @@ class UsuariosController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'nombres' => 'required',
-            'apellidos' => 'required',
-            'cedula' => 'required',
-            'email' => 'required',
+        $validate = Validator::make($request->all(), [
+            'nombres' => 'required|min:5|max:100',
+            'apellidos' => 'required|min:5|max:100',
+            'cedula' => 'required|unique:App\Models\Usuarios,cedula',
+            'email' => 'required|email|max:150|unique:App\Models\Usuarios,email',
             'pais' => 'required',
-            'direccion' => 'required',
-            'celular' => 'required',
-            'categoria_id' => 'required',
+            'direccion' => 'required|max:180',
+            'celular' => 'required|min:10|max:10',
+            'categoria' => 'required',
         ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'errores' => $validate,
+            ], 204);
+        }
 
         $usuario = new Usuarios;
 
@@ -58,7 +65,7 @@ class UsuariosController extends Controller
         $usuario->pais = $request->pais;
         $usuario->direccion = $request->direccion;
         $usuario->celular = $request->celular;
-        $usuario->categoria_id = $request->categoria_id;
+        $usuario->categoria_id = $request->categoria;
 
         $usuario->save();
 

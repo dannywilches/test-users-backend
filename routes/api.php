@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\CategoriasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,5 +27,11 @@ Route::prefix('usuarios')->group(function(){
         Route::post('new', 'store');
         Route::put('update/{id}', 'update');
         Route::delete('delete/{id}', 'destroy');
+    });
+});
+
+Route::prefix('categorias')->group(function(){
+    Route::controller(CategoriasController::class)->group(function () {
+        Route::get('all', 'index');
     });
 });
