@@ -55,7 +55,7 @@ class UsuariosController extends Controller
             return response()->json([
                 'errores' => $validate,
                 'status' => 204,
-            ], 204);
+            ], 201);
         }
 
         $usuario = new Usuarios;
@@ -123,8 +123,8 @@ class UsuariosController extends Controller
         $validate = Validator::make($request->all(), [
             'nombres' => 'required|min:5|max:100',
             'apellidos' => 'required|min:5|max:100',
-            'cedula' => 'required|unique:App\Models\Usuarios,cedula',
-            'email' => 'required|email|max:150|unique:App\Models\Usuarios,email',
+            'cedula' => 'required',
+            'email' => 'required|email|max:150',
             'pais' => 'required',
             'direccion' => 'required|max:180',
             'celular' => 'required|min:10|max:10',
@@ -134,8 +134,8 @@ class UsuariosController extends Controller
         if ($validate->fails()) {
             return response()->json([
                 'errores' => $validate,
-                'status' => 204,
-            ], 204);
+                'status' => 201,
+            ], 201);
         }
 
         $usuario = Usuarios::find($id);
